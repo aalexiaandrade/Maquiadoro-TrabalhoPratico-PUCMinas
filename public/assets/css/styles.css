@@ -1,0 +1,167 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Playfair+Display:wght@700&display=swap');
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css");
+
+:root {
+  --cor-primaria: #c7537b; 
+  --cor-secundaria: #f8f9fa;
+  --cor-texto: #333;
+  --cor-sucesso: #198754;
+  --fonte-titulo: 'Playfair Display', serif;
+  --fonte-corpo: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: var(--fonte-corpo);
+  color: var(--cor-texto);
+  line-height: 1.6;
+  background-color: #ffffff;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--fonte-titulo);
+  color: var(--cor-primaria);
+}
+
+.navbar-brand {
+  font-family: var(--fonte-titulo);
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--cor-primaria) !important;
+}
+
+.navbar .nav-link {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+.navbar .nav-link:hover,
+.navbar .nav-link.active {
+  color: var(--cor-primaria) !important;
+}
+
+.btn-primary {
+  background-color: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background-color: #a34164;
+  border-color: #a34164;
+  transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+  color: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+.btn-outline-primary:hover {
+  background-color: var(--cor-primaria);
+  color: white;
+}
+
+.btn-success {
+  background-color: var(--cor-sucesso);
+  border-color: var(--cor-sucesso);
+  font-weight: 700;
+}
+.btn-success:hover {
+  background-color: #146c43;
+  border-color: #146c43;
+}
+
+#carrossel-destaques .carousel-item img {
+  height: 60vh;
+  min-height: 400px;
+  object-fit: cover;
+  filter: brightness(0.7);
+}
+
+#carrossel-destaques .carousel-caption {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 5px;
+  padding: 20px;
+  bottom: 20%;
+}
+#carrossel-destaques .carousel-caption h5 {
+  font-size: 2.5rem;
+  color: #fff;
+}
+
+.card {
+  transition: all 0.3s ease;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+}
+.card-img-top {
+  height: 280px;
+  object-fit: cover;
+}
+.card-footer {
+  background-color: white;
+  border-top: none;
+}
+
+#secao-aluno {
+  background-color: var(--cor-secundaria);
+}
+#secao-aluno h3 {
+  color: var(--cor-texto);
+  font-family: var(--fonte-corpo);
+  font-weight: 700;
+}
+
+#info-gerais img {
+  max-height: 500px;
+  width: 100%;
+  object-fit: cover;
+}
+#info-gerais .text-primary {
+  color: var(--cor-primaria) !important;
+}
+
+#galeria-container .card-img-top {
+  height: 250px;
+  object-fit: cover;
+}
+
+.footer-socials a {
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+.footer-socials a:hover {
+  color: var(--cor-primaria) !important;
+}
+
+
+@media (max-width: 768px) {
+  #carrossel-destaques .carousel-item img {
+    height: 40vh;
+    min-height: 250px;
+  }
+  #carrossel-destaques .carousel-caption {
+    bottom: 10%;
+    padding: 10px;
+  }
+  #carrossel-destaques .carousel-caption h5 {
+    font-size: 1.8rem;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+  }
+  
+  #info-gerais {
+    text-align: center;
+  }
+  #info-gerais img {
+    margin-bottom: 20px;
+  }
+}
