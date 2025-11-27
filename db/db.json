@@ -60,5 +60,25 @@
       "galeria": [],
       "id": 3
     }
+  ],
+"usuarios": [
+    {
+      "id": "admin-id-1",
+      "login": "admin",
+      "senha": "12345",
+      "nome": "Administradora Aléxia",
+      "email": "admin@maquiadoro.com",
+      "admin": true,
+      "favoritos": []
+    },
+    {
+      "id": "user-id-1",
+      "login": "aalexia.andrade",
+      "senha": "12345",
+      "nome": "Alexia Andrade",
+      "email": "alexiafernanda424@gmail.com",
+      "admin": false,
+      "favoritos": []
+    }
   ]
 }

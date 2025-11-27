@@ -21,40 +21,31 @@
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <nav class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTipos" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Categorias
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownTipos">
-                            <li><a class="dropdown-item" href="#">Promoções</a></li>
-                            <li><a class="dropdown-item" href="#">Marcas</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">Rosto</a></li>
-                            <li><a class="dropdown-item" href="#">Olhos</a></li>
-                            <li><a class="dropdown-item" href="#">Boca</a></li>
-                            <li><a class="dropdown-item" href="#">Pincéis</a></li>
-                            <li><a class="dropdown-item" href="#">Skincare</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item"><a class="nav-link" href="index.html#secao-produtos">Produtos</a></li>
                     <li class="nav-item"><a class="nav-link" href="sobre.html">Sobre</a></li>
-                    <li class="nav-item"><a class="nav-link" href="contato.html">Contato</a></li>
-                </ul>
-                <ul class="navbar-nav ms-2 flex-row">
-                    <li class="nav-item">
-                        <a class="nav-link fs-5" href="#" aria-label="Carrinho">
-                            <i class="bi bi-cart"></i>
-                        </a>
+
+                    <!-- Link de Cadastro de Produto (SÓ ADMIN) -->
+                    <li class="nav-item" id="menu-admin" style="display: none;">
+                        <a class="nav-link text-danger fw-bold" href="cadastro_produto.html">Gerenciar Produtos</a>
+                    </li>
+
+                    <!-- Link de Favoritos (SÓ LOGADO) -->
+                    <li class="nav-item" id="menu-favoritos" style="display: none;">
+                        <a class="nav-link" href="favoritos.html">Favoritos ❤️</a>
+                    </li>
+
+                    <!-- Login / Logout -->
+                    <li class="nav-item" id="menu-login">
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item" id="menu-logout" style="display: none;">
+                        <a class="nav-link btn btn-outline-danger ms-2 px-3" href="#" onclick="logout()">Sair</a>
                     </li>
                 </ul>
-            </nav>
+            </div>
         </div>
     </header>
 

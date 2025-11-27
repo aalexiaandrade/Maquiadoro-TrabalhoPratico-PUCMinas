@@ -1,104 +1,158 @@
-// JÁ CORRIGIDO: API URL na porta 3000
 const API_URL = 'http://localhost:3000/produtos';
+const API_URL_USUARIOS = 'http://localhost:3000/usuarios';
 
+// --- INICIALIZAÇÃO ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Roteador simples
+    verificarLogin(); // Verifica quem está logado e arruma o menu
+
     if (document.getElementById('secao-destaques')) {
         carregarDestaques();
-        carregarTodosProdutos();
-    } else if (document.getElementById('detalhe-produto-container')) {
+        carregarTodosProdutos(); // Agora com suporte a pesquisa e favoritos
+        
+        // Listener para pesquisa em tempo real (opcional) ou no botão
+        const btnPesquisa = document.querySelector('button[onclick="pesquisarProdutos()"]');
+        if(btnPesquisa) btnPesquisa.addEventListener('click', pesquisarProdutos);
+    } 
+    else if (document.getElementById('detalhe-produto-container')) {
         carregarDetalhesProduto();
-    } else if (document.getElementById('form-cadastro-produto')) {
+    } 
+    else if (document.getElementById('favoritos-container')) {
+        carregarPaginaFavoritos();
+    }
+    else if (document.getElementById('form-cadastro-produto')) {
+        verificarPermissaoAdmin(); // Protege a página
         iniciarFormularioCadastro();
-    } else if (document.getElementById('form-editar-produto')) {
-        iniciarFormularioEdicao();
-    } else if (document.getElementById('graficoPrecos')) { // ROTA DO DASHBOARD
+    } 
+    else if (document.getElementById('graficoPrecos')) { 
         carregarDashboard();
     }
 });
 
-// --- FUNÇÕES DE LEITURA (READ) ---
+// --- AUTENTICAÇÃO E MENU ---
+function verificarLogin() {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    
+    if (usuarioLogado) {
+        // Usuário está logado
+        document.getElementById('menu-login').style.display = 'none';
+        document.getElementById('menu-logout').style.display = 'block';
+        document.getElementById('menu-favoritos').style.display = 'block';
 
-async function fetchProdutos() {
-    try {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error('Erro ao buscar produtos. Status: ' + response.status);
-        return await response.json();
-    } catch (error) {
-        console.error(error);
-        const container = document.getElementById('cards-container') || document.getElementById('carrossel-inner-container');
-        if (container) container.innerHTML = "<p class='text-danger text-center'>Falha ao carregar produtos. Verifique se o servidor JSON (npm start) está a rodar.</p>";
-        return [];
+        // Se for admin, mostra menu de cadastro
+        if (usuarioLogado.admin) {
+            const menuAdmin = document.getElementById('menu-admin');
+            if(menuAdmin) menuAdmin.style.display = 'block';
+        }
+    } else {
+        // Ninguém logado
+        document.getElementById('menu-login').style.display = 'block';
+        document.getElementById('menu-logout').style.display = 'none';
+        document.getElementById('menu-favoritos').style.display = 'none';
+        const menuAdmin = document.getElementById('menu-admin');
+        if(menuAdmin) menuAdmin.style.display = 'none';
     }
 }
 
-async function fetchProdutoPorId(id) {
-    try {
-        const response = await fetch(`${API_URL}/${id}`);
-        if (!response.ok) throw new Error('Produto não encontrado. Status: ' + response.status);
-        return await response.json();
-    } catch (error) {
-        console.error(error);
-        const container = document.getElementById('detalhe-produto-container');
-        if (container) container.innerHTML = `<p class='text-danger text-center'>Produto com ID ${id} não encontrado.</p>`;
-        return null;
+function logout() {
+    sessionStorage.removeItem('usuarioLogado');
+    window.location.href = 'index.html';
+}
+
+function verificarPermissaoAdmin() {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (!usuarioLogado || !usuarioLogado.admin) {
+        alert('Acesso negado! Apenas administradores.');
+        window.location.href = 'index.html';
     }
 }
 
-async function carregarDestaques() {
-    const container = document.getElementById('carrossel-inner-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const produtos = await fetchProdutos();
-    const produtosDestaque = produtos.filter(p => p.destaque === true);
-
-    if (produtosDestaque.length === 0) {
-        container.innerHTML = '<div class="carousel-item active"><div class="d-block w-100 bg-secondary" style="height: 400px; display: grid; place-items: center; color: white;">Nenhum produto em destaque.</div></div>';
+// --- FAVORITOS ---
+async function toggleFavorito(idProduto) {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (!usuarioLogado) {
+        alert('Faça login para favoritar produtos!');
         return;
     }
 
-    produtosDestaque.forEach((produto, index) => {
-        const activeClass = (index === 0) ? 'active' : '';
-        const itemHtml = `
-            <div class="carousel-item ${activeClass}">
-                <img src="${produto.imagem_principal}" class="d-block w-100" alt="${produto.nome}">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>${produto.nome}</h5>
-                    <p>${produto.descricao}</p>
-                    <a href="detalhe.html?id=${produto.id}" class="btn btn-primary">Ver Detalhes</a>
-                </div>
-            </div>
-        `;
-        container.innerHTML += itemHtml;
-    });
+    // Verifica se já é favorito
+    const index = usuarioLogado.favoritos.indexOf(idProduto);
+    if (index === -1) {
+        usuarioLogado.favoritos.push(idProduto); // Adiciona
+        alert('Adicionado aos favoritos!');
+    } else {
+        usuarioLogado.favoritos.splice(index, 1); // Remove
+        alert('Removido dos favoritos.');
+    }
+
+    // Atualiza no Servidor (Persistência)
+    try {
+        await fetch(`${API_URL_USUARIOS}/${usuarioLogado.id}`, {
+            method: 'PATCH', // Atualiza apenas os campos mudados
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ favorites: usuarioLogado.favoritos }) 
+            // Obs: Dependendo do db.json, campo pode ser 'favoritos'
+            // Vou usar 'favoritos' conforme definimos no passo 1.
+            body: JSON.stringify({ favoritos: usuarioLogado.favoritos })
+        });
+        
+        // Atualiza na Sessão Local
+        sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+        
+        // Atualiza a tela (recarrega os cards para mudar o ícone)
+        if (document.getElementById('cards-container')) carregarTodosProdutos();
+        if (document.getElementById('favoritos-container')) carregarPaginaFavoritos();
+        
+    } catch (error) {
+        console.error('Erro ao salvar favorito', error);
+    }
 }
 
-async function carregarTodosProdutos() {
+// --- HOME E PESQUISA ---
+async function carregarTodosProdutos(termoPesquisa = '') {
     const container = document.getElementById('cards-container');
     if (!container) return;
     container.innerHTML = '';
 
-    const produtos = await fetchProdutos();
+    let produtos = await fetchProdutos();
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
 
-    if (produtos.length === 0 && !container.innerHTML.includes('text-danger')) {
-        container.innerHTML = '<p class="text-center">Nenhum produto cadastrado.</p>';
+    // Filtro de Pesquisa
+    if (termoPesquisa) {
+        const termo = termoPesquisa.toLowerCase();
+        produtos = produtos.filter(p => 
+            p.nome.toLowerCase().includes(termo) || 
+            p.descricao.toLowerCase().includes(termo)
+        );
+    }
+
+    if (produtos.length === 0) {
+        container.innerHTML = '<p class="text-center">Nenhum produto encontrado.</p>';
         return;
     }
 
     produtos.forEach(produto => {
+        // Define ícone do coração (cheio ou vazio)
+        let iconeFavorito = 'bi-heart'; // vazio
+        if (usuarioLogado && usuarioLogado.favoritos.includes(produto.id)) {
+            iconeFavorito = 'bi-heart-fill text-danger'; // cheio e vermelho
+        }
+
+        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
         const cardHtml = `
             <div class="col">
                 <div class="card h-100 shadow-sm">
-                    <img src="${produto.imagem_principal}" class="card-img-top" alt="${produto.nome}">
+                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
                     <div class="card-body">
-                        <h5 class.card-title">${produto.nome}</h5>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">${produto.nome}</h5>
+                            <button class="btn btn-link p-0" onclick="toggleFavorito(${produto.id})">
+                                <i class="bi ${iconeFavorito} fs-4"></i>
+                            </button>
+                        </div>
                         <p class="card-text">${produto.descricao}</p>
                     </div>
                     <div class="card-footer">
-                        <a href="detalhe.html?id=${produto.id}" class="btn btn-outline-primary w-100">
-                            Ver Produto
-                        </a>
+                        <a href="detalhe.html?id=${produto.id}" class="btn btn-outline-primary w-100">Ver Produto</a>
                     </div>
                 </div>
             </div>
@@ -107,261 +161,58 @@ async function carregarTodosProdutos() {
     });
 }
 
-async function carregarDetalhesProduto() {
-    const params = new URLSearchParams(window.location.search);
-    const idProduto = params.get('id');
+function pesquisarProdutos() {
+    const termo = document.getElementById('campo-pesquisa').value;
+    carregarTodosProdutos(termo);
+}
 
-    if (!idProduto) {
-        window.location.href = 'index.html';
+// --- PÁGINA DE FAVORITOS ---
+async function carregarPaginaFavoritos() {
+    const container = document.getElementById('favoritos-container');
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    if (!usuarioLogado) {
+        window.location.href = 'login.html';
         return;
     }
 
-    const produto = await fetchProdutoPorId(idProduto);
-    if (!produto) return; 
+    const todosProdutos = await fetchProdutos();
+    // Filtra apenas os que estão na lista de IDs do usuário
+    const favoritos = todosProdutos.filter(p => usuarioLogado.favoritos.includes(p.id));
 
-    document.title = produto.nome + " - Detalhes";
+    if (favoritos.length === 0) {
+        container.innerHTML = '<p class="text-center">Você ainda não tem favoritos.</p>';
+        return;
+    }
 
-    const infoContainer = document.getElementById('info-gerais');
-    infoContainer.innerHTML = `
-        <div class="col-md-6">
-            <img src="${produto.imagem_principal}" class="img-fluid rounded shadow-lg" alt="${produto.nome}">
-        </div>
-        <div class="col-md-6">
-            <h2>${produto.nome}</h2>
-            <h4 class="text-muted">${produto.marca}</h4>
-            <h3 class="text-primary my-3">${produto.preco}</h3>
-            <p class="lead">${produto.descricao}</p>
-            <hr>
-            <h5>Sobre o produto:</h5>
-            <p>${produto.conteudo}</p>
-            <div class="mt-4">
-                <a href="editar_produto.html?id=${produto.id}" class="btn btn-warning me-2">
-                    <i class="bi bi-pencil-fill"></i> Editar
-                </a>
-                <button id="btn-excluir" class="btn btn-danger">
-                    <i class="bi bi-trash-fill"></i> Excluir
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('btn-excluir').addEventListener('click', () => {
-        excluirProduto(produto.id);
-    });
-
-    const galeriaContainer = document.getElementById('galeria-container');
-    if (produto.galeria && produto.galeria.length > 0) {
-        galeriaContainer.innerHTML = '';
-        produto.galeria.forEach(foto => {
-            const fotoHtml = `
-                <div class="col">
-                    <div class="card">
-                        <img src="${foto.imagem}" class="card-img-top" alt="${foto.titulo}">
-                        <div class="card-body">
-                            <p class="card-text text-center">${foto.titulo}</p>
+    container.innerHTML = '';
+    favoritos.forEach(produto => {
+        // Aqui o coração é sempre preenchido pois é a pág de favoritos
+        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
+        const cardHtml = `
+            <div class="col">
+                <div class="card h-100 shadow-sm border-danger">
+                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title">${produto.nome}</h5>
+                            <button class="btn btn-link p-0" onclick="toggleFavorito(${produto.id})">
+                                <i class="bi bi-heart-fill text-danger fs-4"></i>
+                            </button>
                         </div>
                     </div>
+                    <div class="card-footer">
+                        <a href="detalhe.html?id=${produto.id}" class="btn btn-primary w-100">Ver</a>
+                    </div>
                 </div>
-            `;
-            galeriaContainer.innerHTML += fotoHtml;
-        });
-    } else {
-        const secaoGaleria = document.getElementById('fotos-vinculadas');
-        if (secaoGaleria) {
-           secaoGaleria.innerHTML = "<p class='text-center'>Não há fotos extras para este produto.</p>";
-        }
-    }
-}
-
-
-// --- FUNÇÃO DE CRIAÇÃO (CREATE) ---
-
-function iniciarFormularioCadastro() {
-    const form = document.getElementById('form-cadastro-produto');
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const novoProduto = {
-            nome: document.getElementById('nome').value,
-            marca: document.getElementById('marca').value,
-            preco: document.getElementById('preco').value,
-            imagem_principal: document.getElementById('imagem_principal').value,
-            descricao: document.getElementById('descricao').value,
-            conteudo: document.getElementById('conteudo').value,
-            destaque: document.getElementById('destaque').checked,
-            galeria: [] 
-        };
-
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(novoProduto)
-            });
-            if (!response.ok) throw new Error('Erro ao cadastrar produto');
-            alert('Produto cadastrado com sucesso!');
-            window.location.href = 'index.html'; 
-        } catch (error) {
-            console.error(error);
-            alert('Falha no cadastro. Verifique o console.');
-        }
+            </div>
+        `;
+        container.innerHTML += cardHtml;
     });
 }
 
-// --- FUNÇÃO DE EXCLUSÃO (DELETE) ---
-
-async function excluirProduto(id) {
-    if (!confirm('Tem certeza que deseja excluir este produto?')) {
-        return;
-    }
-    try {
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
-        });
-        if (!response.ok) throw new Error('Erro ao excluir produto');
-        alert('Produto excluído com sucesso!');
-        window.location.href = 'index.html'; 
-    } catch (error) {
-        console.error(error);
-        alert('Falha ao excluir. Verifique o console.');
-    }
-}
-
-// --- FUNÇÕES DE ATUALIZAÇÃO (UPDATE) ---
-
-async function iniciarFormularioEdicao() {
-    const params = new URLSearchParams(window.location.search);
-    const idProduto = params.get('id');
-
-    if (!idProduto) {
-        alert('ID do produto não fornecido');
-        window.location.href = 'index.html';
-        return;
-    }
-
-    const produto = await fetchProdutoPorId(idProduto);
-    if (!produto) return;
-
-    document.getElementById('nome').value = produto.nome;
-    document.getElementById('marca').value = produto.marca;
-    document.getElementById('preco').value = produto.preco;
-    document.getElementById('imagem_principal').value = produto.imagem_principal;
-    document.getElementById('descricao').value = produto.descricao;
-    document.getElementById('conteudo').value = produto.conteudo;
-    document.getElementById('destaque').checked = produto.destaque;
-
-    const form = document.getElementById('form-editar-produto');
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const produtoAtualizado = {
-            nome: document.getElementById('nome').value,
-            marca: document.getElementById('marca').value,
-            preco: document.getElementById('preco').value,
-            imagem_principal: document.getElementById('imagem_principal').value,
-            descricao: document.getElementById('descricao').value,
-            conteudo: document.getElementById('conteudo').value,
-            destaque: document.getElementById('destaque').checked,
-            galeria: produto.galeria 
-        };
-
-        try {
-            const response = await fetch(`${API_URL}/${idProduto}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(produtoAtualizado)
-            });
-            if (!response.ok) throw new Error('Erro ao atualizar produto');
-            alert('Produto atualizado com sucesso!');
-            window.location.href = `detalhe.html?id=${idProduto}`; 
-        } catch (error) {
-            console.error(error);
-            alert('Falha na atualização. Verifique o console.');
-        }
-    });
-}
-
-// --- FUNÇÕES DO DASHBOARD (CHART.JS) ---
-
-/**
- * Converte uma string de preço (ex: "R$ 89,90") para um número (ex: 89.90)
- */
-function parsePrice(priceString) {
-    if (!priceString) return 0;
-    // 1. Remove "R$" e espaços
-    // 2. Troca a vírgula "," por ponto "."
-    // 3. Converte para número (float)
-    return parseFloat(
-        priceString.replace("R$", "").trim().replace(",", ".")
-    );
-}
-
-/**
- * Carrega os dados da API e desenha o gráfico de barras
- */
-async function carregarDashboard() {
-    const ctx = document.getElementById('graficoPrecos');
-    if (!ctx) return; // Sai se o canvas não existir
-
-    const produtos = await fetchProdutos(); // Reutiliza a nossa função fetch!
-
-    if (produtos.length === 0) {
-        ctx.parentElement.innerHTML = "<p class='text-center'>Nenhum produto cadastrado para exibir no gráfico.</p>";
-        return;
-    }
-
-    // 1. Preparar os dados para o gráfico
-    const labels = produtos.map(produto => produto.nome);
-    const data = produtos.map(produto => parsePrice(produto.preco));
-
-    // 2. Criar o gráfico
-    new Chart(ctx, {
-        type: 'bar', // Tipo: Gráfico de Barras
-        data: {
-            labels: labels, // Nomes dos produtos no eixo X
-            datasets: [{
-                label: 'Preço (R$)',
-                data: data, // Preços no eixo Y
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.2)',
-                    'rgba(54, 162, 235, 0.2)',
-                    'rgba(255, 206, 86, 0.2)',
-                    'rgba(75, 192, 192, 0.2)',
-                    'rgba(153, 102, 255, 0.2)',
-                    'rgba(255, 159, 64, 0.2)'
-                ],
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        // Formata o eixo Y para mostrar "R$ XX"
-                        callback: function(value, index, values) {
-                            return 'R$ ' + value.toFixed(2).replace('.', ',');
-                        }
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false // Esconde a legenda (desnecessária)
-                }
-            }
-        }
-    });
-}
+// --- FUNÇÕES DE SUPORTE E CRUD (Mantenha as que você já tinha) ---
+// Mantenha fetchProdutos, fetchProdutoPorId, carregarDestaques, carregarDetalhesProduto...
+// Mantenha iniciarFormularioCadastro, excluirProduto, iniciarFormularioEdicao, carregarDashboard...
+// (Copie as funções que eu te passei na resposta anterior para baixo daqui, 
+// apenas substitua a 'carregarTodosProdutos' e o 'DOMContentLoaded' pelas novas versões acima).
