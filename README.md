@@ -1,25 +1,9 @@
-# Trabalho Prático 07 - Semanas 13 e 14
+# 💄 Maquiadoro
+💻 Projeto: Site de Vendas de Maquiagem
 
-A partir dos dados cadastrados na etapa anterior, vamos trabalhar formas de apresentação que representem de forma clara e interativa as informações do seu projeto. Você poderá usar gráficos (barra, linha, pizza), mapas, calendários ou outras formas de visualização. Seu desafio é entregar uma página Web que organize, processe e exiba os dados de forma compreensível e esteticamente agradável.
+1º Semestre
 
-Com base nos tipos de projetos escohidos, você deve propor **visualizações que estimulem a interpretação, agrupamento e exibição criativa dos dados**, trabalhando tanto a lógica quanto o design da aplicação.
+Este projeto foi desenvolvido como parte da disciplina Desenvolvimento de Interfaces Web do curso de Engenharia de Software da PUC Minas.
+O objetivo é criar um site de e-commerce voltado para a venda de produtos de maquiagem, aplicando conceitos de HTML, CSS, JavaScript e boas práticas de design de interfaces.
 
-Sugerimos o uso das seguintes ferramentas acessíveis: [FullCalendar](https://fullcalendar.io/), [Chart.js](https://www.chartjs.org/), [Mapbox](https://docs.mapbox.com/api/), para citar algumas.
-
-## Informações do trabalho
-
-- **Nome:** Aléxia Fernanda Alves de Andrade
-- **Matricula:** 904175
-- **Proposta de projeto escolhida:** E-commerce de Maquiagem (Projeto Maquiadoro)
-- **Breve descrição sobre seu projeto:** Um site de e-commerce de maquiagem com front-end dinâmico. Esta versão implementa um back-end simulado com `json-server` para fornecer uma API RESTful, permitindo o CRUD  completo dos produtos da loja.
-
-**Print da tela com a implementação**
-
-Dashboard 1:
-![dashboard1](/dashboard1.png)
-
-Cadastro do item:
-![cadastro](/cadastrocorretivo.png)
-
-Dashboard 2:
-![dashboard2](/dashboard2.png)
+O site busca oferecer uma experiência de navegação moderna e intuitiva, com foco na usabilidade e estética visual, permitindo que o usuário explore, visualize e adicione produtos ao carrinho de forma simples e agradável.
