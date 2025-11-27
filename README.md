@@ -1,23 +1,25 @@
-# 💄 Maquiadoro
-💻 Projeto: Site de Vendas de Maquiagem
+# Trabalho Prático 07 - Semanas 13 e 14
 
-10/2025
-1º Semestre
+A partir dos dados cadastrados na etapa anterior, vamos trabalhar formas de apresentação que representem de forma clara e interativa as informações do seu projeto. Você poderá usar gráficos (barra, linha, pizza), mapas, calendários ou outras formas de visualização. Seu desafio é entregar uma página Web que organize, processe e exiba os dados de forma compreensível e esteticamente agradável.
 
-Este projeto foi desenvolvido como parte da disciplina Desenvolvimento de Interfaces Web do curso de Engenharia de Software da PUC Minas.
-O objetivo é criar um site de e-commerce voltado para a venda de produtos de maquiagem, aplicando conceitos de HTML, CSS, JavaScript e boas práticas de design de interfaces.
+Com base nos tipos de projetos escohidos, você deve propor **visualizações que estimulem a interpretação, agrupamento e exibição criativa dos dados**, trabalhando tanto a lógica quanto o design da aplicação.
 
-O site busca oferecer uma experiência de navegação moderna e intuitiva, com foco na usabilidade e estética visual, permitindo que o usuário explore, visualize e adicione produtos ao carrinho de forma simples e agradável.
+Sugerimos o uso das seguintes ferramentas acessíveis: [FullCalendar](https://fullcalendar.io/), [Chart.js](https://www.chartjs.org/), [Mapbox](https://docs.mapbox.com/api/), para citar algumas.
 
-<img width="1349" height="768" alt="image" src="https://github.com/user-attachments/assets/817aa6bc-c9e5-436b-a0b7-7d0eaab57d92" />
+## Informações do trabalho
 
-<img width="1350" height="768" alt="image" src="https://github.com/user-attachments/assets/003160ae-6391-4ff4-a5a7-e0cf6da3e29c" />
+- **Nome:** Aléxia Fernanda Alves de Andrade
+- **Matricula:** 904175
+- **Proposta de projeto escolhida:** E-commerce de Maquiagem (Projeto Maquiadoro)
+- **Breve descrição sobre seu projeto:** Um site de e-commerce de maquiagem com front-end dinâmico. Esta versão implementa um back-end simulado com `json-server` para fornecer uma API RESTful, permitindo o CRUD  completo dos produtos da loja.
 
-<img width="1351" height="768" alt="image" src="https://github.com/user-attachments/assets/84e2417c-bda5-4d10-aeaf-dd1fb266d6c3" />
+**Print da tela com a implementação**
 
-<img width="1365" height="718" alt="image" src="https://github.com/user-attachments/assets/fefda009-53d2-4411-be20-3218618167a0" />
+Dashboard 1:
+![dashboard1](/dashboard1.png)
 
-<img width="1366" height="760" alt="image" src="https://github.com/user-attachments/assets/43de62cc-a8d6-41d4-ac24-b8cf0dcfc03b" />
+Cadastro do item:
+![cadastro](/cadastrocorretivo.png)
 
-
-
+Dashboard 2:
+![dashboard2](/dashboard2.png)
