@@ -1,18 +1,64 @@
 {
-  "usuarios": [
+  "produtos": [
     {
-      "id": "187cb7e5-e097-4224-8bc7-b610c855e2b1",
-      "login": "admin",
-      "senha": "123",
-      "nome": "Administrador do Sistema",
-      "email": "admin@abc.com"
+      "id": 1,
+      "nome": "Batom Matte Velvet Red",
+      "marca": "Maquiadoro",
+      "descricao": "Um batom vermelho intenso com acabamento matte aveludado de longa duração.",
+      "conteudo": "Nosso Batom Matte Velvet Red oferece cor pigmentada em uma única passada.",
+      "preco": "R$ 99,99",
+      "destaque": true,
+      "imagem_principal": "assets/img/batom-vermelho-1.jpg",
+      "galeria": [
+        {
+          "id": 1,
+          "titulo": "Swatch em pele clara",
+          "imagem": "assets/img/galeria/batom-swatch-clara.jpg"
+        },
+        {
+          "id": 2,
+          "titulo": "Detalhe da Embalagem",
+          "imagem": "assets/img/galeria/batom-embalagem.jpg"
+        },
+        {
+          "id": 3,
+          "titulo": "Modelo usando",
+          "imagem": "assets/img/galeria/batom-modelo.jpg"
+        }
+      ]
     },
     {
-      "id": "ec37c83d-4b7f-458d-9e10-3fda7d37cd3e",
-      "login": "user",
-      "senha": "123",
-      "nome": "Usuario Comum",
-      "email": "user@abc.com"
+      "id": 2,
+      "nome": "Base Fluida HidraGlow",
+      "marca": "Maquiadoro",
+      "descricao": "Base de cobertura média com acabamento luminoso e natural. FPS 30.",
+      "conteudo": "A Base HidraGlow uniformiza o tom da pele enquanto hidrata. Sua fórmula leve permite a construção de camadas sem pesar. Contém ácido hialurônico e FPS 30 para proteger sua pele.",
+      "preco": "R$ 149,90",
+      "destaque": false,
+      "imagem_principal": "assets/img/base-fluida-1.jpg",
+      "galeria": [
+        {
+          "id": 1,
+          "titulo": "Tonalidades disponíveis",
+          "imagem": "assets/img/galeria/base-tonalidades.jpg"
+        },
+        {
+          "id": 2,
+          "titulo": "Textura do produto",
+          "imagem": "assets/img/galeria/base-textura.jpg"
+        }
+      ]
+    },
+    {
+      "nome": "Corretivo MAC",
+      "marca": "Maquiadoro",
+      "preco": "350",
+      "imagem_principal": "assets/img/corretivo.jpg",
+      "descricao": "Corretivo MAC",
+      "conteudo": "Melhor corretivo para tampar manchas e olheiras.",
+      "destaque": false,
+      "galeria": [],
+      "id": 3
     }
   ]
 }
