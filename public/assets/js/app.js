@@ -210,9 +210,3 @@ async function carregarPaginaFavoritos() {
         container.innerHTML += cardHtml;
     });
 }
-
-// --- FUNÇÕES DE SUPORTE E CRUD (Mantenha as que você já tinha) ---
-// Mantenha fetchProdutos, fetchProdutoPorId, carregarDestaques, carregarDetalhesProduto...
-// Mantenha iniciarFormularioCadastro, excluirProduto, iniciarFormularioEdicao, carregarDashboard...
-// (Copie as funções que eu te passei na resposta anterior para baixo daqui, 
-// apenas substitua a 'carregarTodosProdutos' e o 'DOMContentLoaded' pelas novas versões acima).
