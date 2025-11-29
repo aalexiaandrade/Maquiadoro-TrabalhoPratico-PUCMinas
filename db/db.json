@@ -69,7 +69,11 @@
       "nome": "Administradora Aléxia",
       "email": "admin@maquiadoro.com",
       "admin": true,
-      "favoritos": []
+      "favoritos": [
+        "2",
+        "1",
+        "3"
+      ]
     },
     {
       "id": "user-id-1",
@@ -78,7 +82,10 @@
       "nome": "Alexia Andrade",
       "email": "alexiafernanda424@gmail.com",
       "admin": false,
-      "favoritos": []
+      "favoritos": [
+        "1",
+        "2"
+      ]
     },
     {
       "nome": "Kaua Andrade",

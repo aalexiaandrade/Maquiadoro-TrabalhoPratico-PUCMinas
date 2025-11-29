@@ -1,80 +1,59 @@
-// URL da API
 const API_URL = 'http://localhost:3000/produtos';
 const API_URL_USUARIOS = 'http://localhost:3000/usuarios';
 
-// --- INICIALIZAÇÃO E ROTEADOR ---
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // 1. Verificar Login em TODAS as páginas para arrumar o menu
     verificarLogin();
 
-    // 2. Roteador: Executa funções dependendo de qual elemento existe na página
     if (document.getElementById('secao-destaques')) {
-        // Estamos na HOME
         carregarDestaques();
         carregarTodosProdutos();
-        
-        // Ativa pesquisa se houver botão
         const btnPesquisa = document.querySelector('button[onclick="pesquisarProdutos()"]');
         if(btnPesquisa) btnPesquisa.addEventListener('click', pesquisarProdutos);
     } 
     else if (document.getElementById('detalhe-produto-container')) {
-        // Estamos na página de DETALHES
         carregarDetalhesProduto();
     } 
     else if (document.getElementById('form-cadastro-produto')) {
-        // Estamos na página de CADASTRO DE PRODUTO
-        verificarPermissaoAdmin(); // Bloqueia se não for admin
+        verificarPermissaoAdmin();
         iniciarFormularioCadastro();
     } 
     else if (document.getElementById('form-editar-produto')) {
-        // Estamos na página de EDIÇÃO DE PRODUTO
-        verificarPermissaoAdmin(); // Bloqueia se não for admin
+        verificarPermissaoAdmin();
         iniciarFormularioEdicao();
     }
     else if (document.getElementById('graficoPrecos')) { 
-        // Estamos no DASHBOARD
         carregarDashboard();
     }
     else if (document.getElementById('form-login')) {
-        // Estamos no LOGIN
         iniciarLogin();
     }
     else if (document.getElementById('form-cadastro-usuario')) {
-        // Estamos no CADASTRO DE USUÁRIO
         iniciarCadastroUsuario();
     }
     else if (document.getElementById('favoritos-container')) {
-        // Estamos nos FAVORITOS
         carregarPaginaFavoritos();
     }
 });
 
-// =================================================================
-// SEÇÃO 1: SISTEMA DE LOGIN E MENU
-// =================================================================
+// --- LOGIN E MENU ---
 
 function verificarLogin() {
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
     
-    // Elementos do Menu
     const menuLogin = document.getElementById('menu-login');
     const menuLogout = document.getElementById('menu-logout');
     const menuAdmin = document.getElementById('menu-admin');
     const menuFavoritos = document.getElementById('menu-favoritos');
 
     if (usuarioLogado) {
-        // Usuário Logado
         if(menuLogin) menuLogin.style.display = 'none';
         if(menuLogout) menuLogout.style.display = 'block';
         if(menuFavoritos) menuFavoritos.style.display = 'block';
 
-        // Se for Admin, mostra o menu de gerenciar
         if (usuarioLogado.admin && menuAdmin) {
             menuAdmin.style.display = 'block';
         }
     } else {
-        // Ninguém Logado
         if(menuLogin) menuLogin.style.display = 'block';
         if(menuLogout) menuLogout.style.display = 'none';
         if(menuFavoritos) menuFavoritos.style.display = 'none';
@@ -91,12 +70,12 @@ function logout() {
 function verificarPermissaoAdmin() {
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
     if (!usuarioLogado || !usuarioLogado.admin) {
-        alert('Acesso negado! Apenas administradores podem acessar esta página.');
+        alert('Acesso negado!');
         window.location.href = 'index.html';
     }
 }
 
-// --- FUNÇÕES DE LOGIN (Página Login) ---
+// --- FUNÇÕES DE LOGIN ---
 
 function iniciarLogin() {
     const form = document.getElementById('form-login');
@@ -112,6 +91,8 @@ function iniciarLogin() {
             const usuarioEncontrado = usuarios.find(u => u.login === login && u.senha === senha);
 
             if (usuarioEncontrado) {
+                if (!usuarioEncontrado.favoritos) usuarioEncontrado.favoritos = [];
+                
                 sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioEncontrado));
                 alert(`Bem-vindo(a), ${usuarioEncontrado.nome}!`);
                 window.location.href = 'index.html';
@@ -134,7 +115,7 @@ function iniciarCadastroUsuario() {
             email: document.getElementById('email').value,
             login: document.getElementById('login').value,
             senha: document.getElementById('senha').value,
-            admin: false, // Padrão: usuário comum
+            admin: false, 
             favoritos: []
         };
 
@@ -152,35 +133,174 @@ function iniciarCadastroUsuario() {
     });
 }
 
-// =================================================================
-// SEÇÃO 2: FUNÇÕES DE PRODUTOS (LEITURA E HOME)
-// =================================================================
+// --- PRODUTOS E FAVORITOS ---
 
-// Busca TODOS os produtos
 async function fetchProdutos() {
     try {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error('Erro ao buscar produtos.');
         return await response.json();
     } catch (error) {
-        console.error(error);
-        const container = document.getElementById('cards-container') || document.getElementById('carrossel-inner-container');
-        if (container) container.innerHTML = "<p class='text-danger text-center'>Falha ao carregar produtos. Verifique o servidor.</p>";
+        console.error("Erro API", error);
         return [];
     }
 }
 
-// Busca UM produto por ID
 async function fetchProdutoPorId(id) {
     try {
         const response = await fetch(`${API_URL}/${id}`);
-        if (!response.ok) throw new Error('Produto não encontrado.');
+        if (!response.ok) return null;
         return await response.json();
     } catch (error) {
-        console.error(error);
         return null;
     }
 }
+
+async function toggleFavorito(idProduto) {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (!usuarioLogado) {
+        alert('Faça login para favoritar!');
+        return;
+    }
+
+    if (!usuarioLogado.favoritos) usuarioLogado.favoritos = [];
+
+    const idString = String(idProduto);
+    const index = usuarioLogado.favoritos.findIndex(fav => String(fav) === idString);
+
+    if (index === -1) {
+        usuarioLogado.favoritos.push(idString);
+        alert('Adicionado aos favoritos!');
+    } else {
+        usuarioLogado.favoritos.splice(index, 1);
+        alert('Removido dos favoritos.');
+    }
+
+    try {
+        await fetch(`${API_URL_USUARIOS}/${usuarioLogado.id}`, {
+            method: 'PATCH',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ favoritos: usuarioLogado.favoritos })
+        });
+        
+        sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
+        
+        if (document.getElementById('cards-container')) carregarTodosProdutos(); 
+        if (document.getElementById('favoritos-container')) carregarPaginaFavoritos();
+        
+    } catch (error) {
+        console.error(error);
+        alert('Erro ao salvar favorito.');
+    }
+}
+
+async function carregarTodosProdutos(termoPesquisa = '') {
+    const container = document.getElementById('cards-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    let produtos = await fetchProdutos();
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    if (termoPesquisa) {
+        const termo = termoPesquisa.toLowerCase();
+        produtos = produtos.filter(p => p.nome.toLowerCase().includes(termo));
+    }
+
+    if (produtos.length === 0) {
+        container.innerHTML = '<p class="text-center">Nenhum produto encontrado.</p>';
+        return;
+    }
+
+    produtos.forEach(produto => {
+        let icone = 'bi-heart';
+        let cor = '';
+        
+        if (usuarioLogado && usuarioLogado.favoritos) {
+            const ehFavorito = usuarioLogado.favoritos.some(fav => String(fav) === String(produto.id));
+            if (ehFavorito) {
+                icone = 'bi-heart-fill';
+                cor = 'text-danger';
+            }
+        }
+
+        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
+
+        const cardHtml = `
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">${produto.nome}</h5>
+                            <button class="btn btn-link p-0 ${cor}" onclick="toggleFavorito('${produto.id}')">
+                                <i class="bi ${icone} fs-4"></i>
+                            </button>
+                        </div>
+                        <p class="card-text">${produto.descricao}</p>
+                    </div>
+                    <div class="card-footer">
+                        <a href="detalhe.html?id=${produto.id}" class="btn btn-outline-primary w-100">Ver Produto</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += cardHtml;
+    });
+}
+
+function pesquisarProdutos() {
+    const termo = document.getElementById('campo-pesquisa').value;
+    carregarTodosProdutos(termo);
+}
+
+async function carregarPaginaFavoritos() {
+    const container = document.getElementById('favoritos-container');
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    if (!usuarioLogado) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const todosProdutos = await fetchProdutos();
+    
+    const favoritos = todosProdutos.filter(p => 
+        usuarioLogado.favoritos && usuarioLogado.favoritos.some(fav => String(fav) === String(p.id))
+    );
+
+    if (favoritos.length === 0) {
+        container.innerHTML = '<div class="col-12"><p class="text-center text-muted">Você ainda não tem produtos favoritos.</p></div>';
+        return;
+    }
+
+    container.innerHTML = '';
+    favoritos.forEach(produto => {
+        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
+        
+        // CORREÇÃO: Borda rosa (usando a variável CSS) em vez de vermelha
+        const cardHtml = `
+            <div class="col">
+                <div class="card h-100 shadow-sm" style="border: 2px solid var(--cor-primaria);">
+                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title">${produto.nome}</h5>
+                            <button class="btn btn-link p-0" onclick="toggleFavorito('${produto.id}')">
+                                <i class="bi bi-heart-fill text-danger fs-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="detalhe.html?id=${produto.id}" class="btn btn-primary w-100">Ver</a>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += cardHtml;
+    });
+}
+
+// --- DESTAQUES E DASHBOARD ---
 
 async function carregarDestaques() {
     const container = document.getElementById('carrossel-inner-container');
@@ -213,164 +333,53 @@ async function carregarDestaques() {
     });
 }
 
-// Carrega lista de produtos na HOME (com pesquisa e favoritos)
-async function carregarTodosProdutos(termoPesquisa = '') {
-    const container = document.getElementById('cards-container');
-    if (!container) return;
-    container.innerHTML = '';
+function parsePrice(priceString) {
+    if (!priceString) return 0;
+    return parseFloat(priceString.replace("R$", "").trim().replace(",", "."));
+}
 
-    let produtos = await fetchProdutos();
-    
-    // Filtro de Pesquisa
-    if (termoPesquisa) {
-        const termo = termoPesquisa.toLowerCase();
-        produtos = produtos.filter(p => p.nome.toLowerCase().includes(termo));
-    }
+async function carregarDashboard() {
+    const ctx = document.getElementById('graficoPrecos');
+    if (!ctx) return;
+
+    const produtos = await fetchProdutos();
 
     if (produtos.length === 0) {
-        container.innerHTML = '<p class="text-center">Nenhum produto encontrado.</p>';
+        ctx.parentElement.innerHTML = "<p class='text-center'>Nenhum dado para exibir.</p>";
         return;
     }
 
-    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    const labels = produtos.map(p => p.nome);
+    const data = produtos.map(p => parsePrice(p.preco));
 
-    produtos.forEach(produto => {
-        // Ícone Favorito
-        let icone = 'bi-heart';
-        let cor = '';
-        if (usuarioLogado && usuarioLogado.favoritos && usuarioLogado.favoritos.includes(produto.id)) {
-            icone = 'bi-heart-fill';
-            cor = 'text-danger';
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Preço (R$)',
+                data: data,
+                backgroundColor: 'rgba(199, 83, 123, 0.5)',
+                borderColor: 'rgba(199, 83, 123, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toFixed(2).replace('.', ',');
+                        }
+                    }
+                }
+            }
         }
-
-        // Caminho da imagem
-        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
-
-        const cardHtml = `
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title">${produto.nome}</h5>
-                            <button class="btn btn-link p-0 ${cor}" onclick="toggleFavorito('${produto.id}')">
-                                <i class="bi ${icone} fs-4"></i>
-                            </button>
-                        </div>
-                        <p class="card-text">${produto.descricao}</p>
-                    </div>
-                    <div class="card-footer">
-                        <a href="detalhe.html?id=${produto.id}" class="btn btn-outline-primary w-100">Ver Produto</a>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML += cardHtml;
     });
 }
 
-// Função de Pesquisa
-function pesquisarProdutos() {
-    const termo = document.getElementById('campo-pesquisa').value;
-    carregarTodosProdutos(termo);
-}
-
-// =================================================================
-// SEÇÃO 3: LÓGICA DE FAVORITOS
-// =================================================================
-
-async function toggleFavorito(idProduto) {
-    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
-    if (!usuarioLogado) {
-        alert('Faça login para favoritar!');
-        return;
-    }
-
-    if (!usuarioLogado.favoritos) usuarioLogado.favoritos = [];
-
-    // O idProduto pode vir como string ou number dependendo da API, normalizamos para string na comparação
-    const idString = String(idProduto);
-    
-    // Verifica se já existe na lista (comparando strings)
-    const index = usuarioLogado.favoritos.findIndex(fav => String(fav) === idString);
-
-    if (index === -1) {
-        usuarioLogado.favoritos.push(idProduto); // Adiciona
-        alert('Favoritado!');
-    } else {
-        usuarioLogado.favoritos.splice(index, 1); // Remove
-        alert('Removido dos favoritos.');
-    }
-
-    // Atualiza no Servidor
-    try {
-        await fetch(`${API_URL_USUARIOS}/${usuarioLogado.id}`, {
-            method: 'PATCH',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ favoritos: usuarioLogado.favoritos })
-        });
-        // Atualiza Sessão Local e Tela
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
-        
-        if (document.getElementById('cards-container')) carregarTodosProdutos(); // Atualiza ícones na home
-        if (document.getElementById('favoritos-container')) carregarPaginaFavoritos(); // Atualiza lista de favoritos
-        
-    } catch (error) {
-        console.error(error);
-        alert('Erro ao salvar favorito.');
-    }
-}
-
-async function carregarPaginaFavoritos() {
-    const container = document.getElementById('favoritos-container');
-    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
-
-    if (!usuarioLogado) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    const todosProdutos = await fetchProdutos();
-    
-    // Filtra apenas os que estão na lista de IDs do usuário
-    // Convertemos para String para garantir a comparação correta
-    const favoritos = todosProdutos.filter(p => 
-        usuarioLogado.favoritos && usuarioLogado.favoritos.map(String).includes(String(p.id))
-    );
-
-    if (favoritos.length === 0) {
-        container.innerHTML = '<p class="text-center">Você ainda não tem favoritos.</p>';
-        return;
-    }
-
-    container.innerHTML = '';
-    favoritos.forEach(produto => {
-        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
-        const cardHtml = `
-            <div class="col">
-                <div class="card h-100 shadow-sm border-danger">
-                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between">
-                            <h5 class="card-title">${produto.nome}</h5>
-                            <button class="btn btn-link p-0" onclick="toggleFavorito('${produto.id}')">
-                                <i class="bi bi-heart-fill text-danger fs-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <a href="detalhe.html?id=${produto.id}" class="btn btn-primary w-100">Ver</a>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML += cardHtml;
-    });
-}
-
-// =================================================================
-// SEÇÃO 4: LÓGICA DE DETALHES (detalhe.html)
-// =================================================================
+// --- DETALHES E CRUD ---
 
 async function carregarDetalhesProduto() {
     const params = new URLSearchParams(window.location.search);
@@ -420,7 +429,6 @@ async function carregarDetalhesProduto() {
         excluirProduto(produto.id);
     });
 
-    // Galeria
     const galeriaContainer = document.getElementById('galeria-container');
     if (produto.galeria && produto.galeria.length > 0) {
         galeriaContainer.innerHTML = '';
@@ -443,10 +451,6 @@ async function carregarDetalhesProduto() {
         if(secaoGaleria) secaoGaleria.innerHTML = "<p class='text-center'>Não há fotos extras.</p>";
     }
 }
-
-// =================================================================
-// SEÇÃO 5: CRUD (CADASTRO, EDIÇÃO, EXCLUSÃO)
-// =================================================================
 
 function iniciarFormularioCadastro() {
     const form = document.getElementById('form-cadastro-produto');
@@ -546,54 +550,4 @@ async function excluirProduto(id) {
     } catch (error) {
         alert('Falha ao excluir.');
     }
-}
-
-// =================================================================
-// SEÇÃO 6: DASHBOARD (CHART.JS)
-// =================================================================
-
-function parsePrice(priceString) {
-    if (!priceString) return 0;
-    return parseFloat(priceString.replace("R$", "").trim().replace(",", "."));
-}
-
-async function carregarDashboard() {
-    const ctx = document.getElementById('graficoPrecos');
-    if (!ctx) return;
-
-    const produtos = await fetchProdutos();
-
-    if (produtos.length === 0) {
-        ctx.parentElement.innerHTML = "<p class='text-center'>Nenhum dado para exibir.</p>";
-        return;
-    }
-
-    const labels = produtos.map(p => p.nome);
-    const data = produtos.map(p => parsePrice(p.preco));
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Preço (R$)',
-                data: data,
-                backgroundColor: 'rgba(199, 83, 123, 0.5)',
-                borderColor: 'rgba(199, 83, 123, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return 'R$ ' + value.toFixed(2).replace('.', ',');
-                        }
-                    }
-                }
-            }
-        }
-    });
 }

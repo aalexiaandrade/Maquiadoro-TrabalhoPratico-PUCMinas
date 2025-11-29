@@ -1,76 +1,64 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maquiadoro - Home</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="/assets/css/styles.css">
+    <title>Meus Favoritos - Maquiadoro</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/styles.css">
 </head>
-
 <body>
 
+    <!-- CABEÇALHO PADRÃO -->
     <header class="navbar navbar-expand-lg navbar-light bg-light shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand" href="index.html">
                 <strong>Maquiadoro</strong>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-
-                    <!-- DROPDOWN CATEGORIAS -->
+                    
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTipos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Categorias
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownTipos">
                             <li><a class="dropdown-item" href="#">Promoções</a></li>
                             <li><a class="dropdown-item" href="#">Marcas</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#">Rosto</a></li>
                             <li><a class="dropdown-item" href="#">Olhos</a></li>
                             <li><a class="dropdown-item" href="#">Boca</a></li>
+                            <li><a class="dropdown-item" href="#">Pincéis</a></li>
+                            <li><a class="dropdown-item" href="#">Skincare</a></li>
                         </ul>
                     </li>
 
-                    <!-- MENU ADMIN (Oculto por padrão, aparece só se for admin) -->
                     <li class="nav-item" id="menu-admin" style="display: none;">
                         <a class="nav-link text-danger fw-bold" href="cadastro_produto.html">Gerenciar Produtos</a>
                     </li>
 
-                    <!-- MENU FAVORITOS (Oculto por padrão, aparece só se logado) -->
                     <li class="nav-item" id="menu-favoritos" style="display: none;">
-                        <a class="nav-link" href="favoritos.html">Favoritos ❤️</a>
+                        <a class="nav-link active" href="favoritos.html">Favoritos ❤️</a>
                     </li>
 
                     <li class="nav-item"><a class="nav-link" href="sobre.html">Sobre</a></li>
                     <li class="nav-item"><a class="nav-link" href="contato.html">Contato</a></li>
                 </ul>
-
-                <!-- ÁREA DE LOGIN / LOGOUT -->
+                
                 <ul class="navbar-nav ms-2 flex-row align-items-center">
-                    <!-- Botão Login (Visível se NÃO logado) -->
                     <li class="nav-item" id="menu-login">
                         <a class="nav-link btn btn-outline-primary ms-2 px-3" href="login.html">Login</a>
                     </li>
-
-                    <!-- Botão Sair (Visível se logado) -->
                     <li class="nav-item" id="menu-logout" style="display: none;">
                         <a class="nav-link btn btn-outline-danger ms-2 px-3" href="#" onclick="logout()">Sair</a>
                     </li>
-
                     <li class="nav-item ms-2">
                         <a class="nav-link fs-5" href="#" aria-label="Carrinho">
                             <i class="bi bi-cart"></i>
@@ -81,47 +69,13 @@
         </div>
     </header>
 
-    <main>
-        <section id="secao-destaques" class="container my-5">
-            <h2 class="text-center mb-4">Produtos em Destaque</h2>
-            <div id="carrossel-destaques" class="carousel slide" data-bs-ride="carousel">
-
-                <div class="carousel-inner" id="carrossel-inner-container">
-                    <div class="carousel-item active">
-                        <div class="d-block w-100 bg-secondary"
-                            style="height: 400px; display: grid; place-items: center; color: white;">
-                            Carregando destaques...
-                        </div>
-                    </div>
-                </div>
-
-                <button class="carousel-control-prev" type="button" data-bs-target="#carrossel-destaques"
-                    data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Anterior</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carrossel-destaques"
-                    data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Próximo</span>
-                </button>
-            </div>
-        </section>
-
-        <section id="secao-produtos" class="container my-5">
-            <h2 class="text-center mb-4">Todos os Produtos</h2>
-            <div id="cards-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                <p id="loading-produtos">Carregando produtos...</p>
-            </div>
-        </section>
-
-        <section id="secao-aluno" class="bg-light py-5">
-            <div class="container text-center">
-                <h3>Site Criado por:</h3>
-                <p class="lead">Aléxia Andrade</p>
-                <p>Projeto da disciplina de Desenvolvimento de Interfaces WEB</p>
-            </div>
-        </section>
+    <main class="container my-5">
+        <h2 class="text-center mb-4">Meus Favoritos ❤️</h2>
+        
+        <!-- CONTAINER ONDE OS CARDS DE FAVORITOS VÃO APARECER -->
+        <div id="favoritos-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <p class="text-center">Carregando seus favoritos...</p>
+        </div>
     </main>
 
     <footer class="text-center py-4 bg-dark text-white">
@@ -136,10 +90,7 @@
         </div>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="assets/js/app.js"></script>
 </body>
-
 </html>
