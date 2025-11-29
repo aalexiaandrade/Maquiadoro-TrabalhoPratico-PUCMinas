@@ -277,7 +277,6 @@ async function carregarPaginaFavoritos() {
     favoritos.forEach(produto => {
         const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
         
-        // CORREÇÃO: Borda rosa (usando a variável CSS) em vez de vermelha
         const cardHtml = `
             <div class="col">
                 <div class="card h-100 shadow-sm" style="border: 2px solid var(--cor-primaria);">
@@ -379,11 +378,12 @@ async function carregarDashboard() {
     });
 }
 
-// --- DETALHES E CRUD ---
+// --- DETALHES (LÓGICA ALTERADA AQUI) ---
 
 async function carregarDetalhesProduto() {
     const params = new URLSearchParams(window.location.search);
     const idProduto = params.get('id');
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
 
     if (!idProduto) {
         window.location.href = 'index.html';
@@ -400,6 +400,33 @@ async function carregarDetalhesProduto() {
     document.title = produto.nome + " - Detalhes";
     const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
 
+    // --- AQUI ESTÁ A LÓGICA DE PERMISSÃO ---
+    let botoesAcao = '';
+    
+    if (usuarioLogado && usuarioLogado.admin) {
+        // Se for ADMIN: Botões de Editar e Excluir
+        botoesAcao = `
+            <div class="mt-4 p-3 bg-light rounded border">
+                <h6 class="text-muted mb-2"><i class="bi bi-shield-lock"></i> Área Administrativa</h6>
+                <a href="editar_produto.html?id=${produto.id}" class="btn btn-warning me-2">
+                    <i class="bi bi-pencil-fill"></i> Editar
+                </a>
+                <button id="btn-excluir" class="btn btn-danger">
+                    <i class="bi bi-trash-fill"></i> Excluir
+                </button>
+            </div>
+        `;
+    } else {
+        // Se for CLIENTE (ou não logado): Botão de Comprar (sem lógica real por enquanto)
+        botoesAcao = `
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-success btn-lg flex-grow-1" onclick="alert('Produto adicionado ao carrinho! (Simulação)')">
+                    <i class="bi bi-cart-plus"></i> Adicionar ao Carrinho
+                </button>
+            </div>
+        `;
+    }
+
     const infoContainer = document.getElementById('info-gerais');
     infoContainer.innerHTML = `
         <div class="col-md-6">
@@ -414,20 +441,17 @@ async function carregarDetalhesProduto() {
             <h5>Sobre o produto:</h5>
             <p>${produto.conteudo}</p>
             
-            <div class="mt-4">
-                <a href="editar_produto.html?id=${produto.id}" class="btn btn-warning me-2">
-                    <i class="bi bi-pencil-fill"></i> Editar
-                </a>
-                <button id="btn-excluir" class="btn btn-danger">
-                    <i class="bi bi-trash-fill"></i> Excluir
-                </button>
-            </div>
+            ${botoesAcao} <!-- BOTOES DINAMICOS AQUI -->
         </div>
     `;
 
-    document.getElementById('btn-excluir').addEventListener('click', () => {
-        excluirProduto(produto.id);
-    });
+    // Só adiciona o evento de excluir se o botão existir (ou seja, se for admin)
+    const btnExcluir = document.getElementById('btn-excluir');
+    if (btnExcluir) {
+        btnExcluir.addEventListener('click', () => {
+            excluirProduto(produto.id);
+        });
+    }
 
     const galeriaContainer = document.getElementById('galeria-container');
     if (produto.galeria && produto.galeria.length > 0) {
