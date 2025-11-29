@@ -61,7 +61,7 @@
       "id": 3
     }
   ],
-"usuarios": [
+  "usuarios": [
     {
       "id": "admin-id-1",
       "login": "admin",
@@ -79,6 +79,26 @@
       "email": "alexiafernanda424@gmail.com",
       "admin": false,
       "favoritos": []
+    },
+    {
+      "nome": "Kaua Andrade",
+      "email": "kauaandrade123@gmail.com",
+      "login": "kaua.andrade",
+      "senha": "12345",
+      "admin": false,
+      "favoritos": [
+        "1"
+      ],
+      "id": "J9jBybc"
+    },
+    {
+      "nome": "Kaua Andrade",
+      "email": "kauaandrade123@gmail.com",
+      "login": "kaua.andrade",
+      "senha": "12345",
+      "admin": false,
+      "favoritos": [],
+      "id": "3sbHA00"
     }
   ]
 }
