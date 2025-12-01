@@ -171,44 +171,19 @@
       "id": "admin-id-1",
       "login": "admin",
       "senha": "12345",
-      "nome": "Administradora Aléxia",
+      "nome": "Administradora",
       "email": "admin@maquiadoro.com",
       "admin": true,
-      "favoritos": [
-        "1"
-      ]
+      "favoritos": []
     },
     {
       "id": "user-id-1",
-      "login": "aalexia.andrade",
+      "login": "user",
       "senha": "12345",
-      "nome": "Alexia Andrade",
-      "email": "alexiafernanda424@gmail.com",
+      "nome": "Usuario",
+      "email": "user@gmail.com",
       "admin": false,
-      "favoritos": [
-        "1",
-        "2"
-      ]
-    },
-    {
-      "nome": "Kaua Andrade",
-      "email": "kauaandrade123@gmail.com",
-      "login": "kaua.andrade",
-      "senha": "12345",
-      "admin": false,
-      "favoritos": [
-        "1"
-      ],
-      "id": "J9jBybc"
-    },
-    {
-      "nome": "Kaua Andrade",
-      "email": "kauaandrade123@gmail.com",
-      "login": "kaua.andrade",
-      "senha": "12345",
-      "admin": false,
-      "favoritos": [],
-      "id": "3sbHA00"
+      "favoritos": []
     }
   ]
 }
