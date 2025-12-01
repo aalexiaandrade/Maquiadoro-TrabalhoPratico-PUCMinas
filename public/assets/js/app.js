@@ -6,15 +6,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ROTEADOR
     if (document.getElementById('secao-destaques')) {
+        // Estamos na Home
         carregarDestaques();
         carregarTodosProdutos();
+        
+        // Ativa pesquisa pelo Botão
         const btnPesquisa = document.querySelector('button[onclick="pesquisarProdutos()"]');
-        if(btnPesquisa) btnPesquisa.addEventListener('click', pesquisarProdutos);
+        if(btnPesquisa) {
+            // Removemos o onclick do HTML via JS para evitar conflito e usamos listener
+            btnPesquisa.removeAttribute('onclick'); 
+            btnPesquisa.addEventListener('click', pesquisarProdutos);
+        }
+
+        // Ativa pesquisa pelo ENTER
+        const inputPesquisa = document.getElementById('campo-pesquisa');
+        if(inputPesquisa) {
+            inputPesquisa.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    pesquisarProdutos();
+                }
+            });
+        }
     } 
     else if (document.getElementById('detalhe-produto-container')) {
         carregarDetalhesProduto();
     } 
-    else if (document.getElementById('lista-carrinho')) { // ROTA DO CARRINHO
+    else if (document.getElementById('lista-carrinho')) { 
         carregarPaginaCarrinho();
     }
     else if (document.getElementById('form-cadastro-produto')) {
@@ -40,13 +57,97 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =================================================================
-// 1. SISTEMA DE CARRINHO (NOVO)
+// 1. FUNÇÕES DE PESQUISA (CORRIGIDAS)
+// =================================================================
+
+function pesquisarProdutos() {
+    const input = document.getElementById('campo-pesquisa');
+    if(input) {
+        const termo = input.value;
+        console.log("Pesquisando por:", termo); // Para debug no F12
+        carregarTodosProdutos(termo);
+    }
+}
+
+async function carregarTodosProdutos(termoPesquisa = '') {
+    const container = document.getElementById('cards-container');
+    if (!container) return;
+    
+    // Mostra loading enquanto busca
+    container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+
+    let produtos = await fetchProdutos();
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+
+    // LÓGICA DE FILTRO MELHORADA (Nome E Descrição)
+    if (termoPesquisa) {
+        const termo = termoPesquisa.toLowerCase();
+        produtos = produtos.filter(p => 
+            p.nome.toLowerCase().includes(termo) || 
+            (p.descricao && p.descricao.toLowerCase().includes(termo))
+        );
+    }
+
+    container.innerHTML = ''; // Limpa o loading
+
+    if (produtos.length === 0) {
+        container.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <h4 class="text-muted">Nenhum produto encontrado 😢</h4>
+                <p>Tente buscar por outro termo.</p>
+                ${termoPesquisa ? '<button class="btn btn-outline-primary" onclick="limparPesquisa()">Ver Todos</button>' : ''}
+            </div>`;
+        return;
+    }
+
+    produtos.forEach(produto => {
+        let icone = 'bi-heart';
+        let cor = '';
+        if (usuarioLogado && usuarioLogado.favoritos && usuarioLogado.favoritos.includes(String(produto.id))) {
+            icone = 'bi-heart-fill';
+            cor = 'text-danger';
+        }
+
+        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
+
+        const cardHtml = `
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0 text-truncate" style="max-width: 80%;">${produto.nome}</h5>
+                            <button class="btn btn-link p-0 ${cor}" onclick="toggleFavorito('${produto.id}')">
+                                <i class="bi ${icone} fs-4"></i>
+                            </button>
+                        </div>
+                        <p class="card-text text-muted small">${produto.descricao}</p>
+                        <h5 class="text-primary fw-bold">${produto.preco}</h5>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 d-flex gap-2">
+                        <a href="detalhe.html?id=${produto.id}" class="btn btn-outline-primary flex-grow-1">Ver</a>
+                        <button class="btn btn-success" onclick="adicionarAoCarrinho('${produto.id}')" title="Adicionar ao Carrinho">
+                            <i class="bi bi-cart-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += cardHtml;
+    });
+}
+
+function limparPesquisa() {
+    document.getElementById('campo-pesquisa').value = '';
+    carregarTodosProdutos();
+}
+
+// =================================================================
+// 2. SISTEMA DE CARRINHO
 // =================================================================
 
 function adicionarAoCarrinho(idProduto) {
     let carrinho = JSON.parse(localStorage.getItem('carrinhoMaquiadoro')) || [];
-    
-    // Verifica se já existe para aumentar quantidade
     const itemExistente = carrinho.find(item => item.id == idProduto);
     
     if (itemExistente) {
@@ -84,7 +185,6 @@ async function carregarPaginaCarrinho() {
     container.innerHTML = '';
 
     carrinho.forEach((item, index) => {
-        // Encontra o produto real na lista da API (pelo ID)
         const produtoReal = todosProdutos.find(p => String(p.id) === String(item.id));
         
         if (produtoReal) {
@@ -142,154 +242,105 @@ function finalizarCompra() {
         alert("Seu carrinho está vazio!");
         return;
     }
-    
     alert('🎉 Compra realizada com sucesso!\nObrigado pela preferência.');
     localStorage.removeItem('carrinhoMaquiadoro');
     window.location.href = 'index.html';
 }
 
 // =================================================================
-// 2. FUNÇÕES DE PRODUTOS (HOME E LISTAGEM)
+// 3. LOGIN E PERMISSÕES
 // =================================================================
 
-async function carregarTodosProdutos(termoPesquisa = '') {
-    const container = document.getElementById('cards-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    let produtos = await fetchProdutos();
+function verificarLogin() {
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    
+    const menuLogin = document.getElementById('menu-login');
+    const menuLogout = document.getElementById('menu-logout');
+    const menuAdmin = document.getElementById('menu-admin');
+    const menuFavoritos = document.getElementById('menu-favoritos');
 
-    if (termoPesquisa) {
-        const termo = termoPesquisa.toLowerCase();
-        produtos = produtos.filter(p => p.nome.toLowerCase().includes(termo));
-    }
+    if (usuarioLogado) {
+        if(menuLogin) menuLogin.style.display = 'none';
+        if(menuLogout) menuLogout.style.display = 'block';
+        if(menuFavoritos) menuFavoritos.style.display = 'block';
 
-    if (produtos.length === 0) {
-        container.innerHTML = '<p class="text-center">Nenhum produto encontrado.</p>';
-        return;
-    }
-
-    produtos.forEach(produto => {
-        // Ícone Favorito
-        let icone = 'bi-heart';
-        let cor = '';
-        if (usuarioLogado && usuarioLogado.favoritos && usuarioLogado.favoritos.some(fav => String(fav) === String(produto.id))) {
-            icone = 'bi-heart-fill';
-            cor = 'text-danger';
+        if (usuarioLogado.admin && menuAdmin) {
+            menuAdmin.style.display = 'block';
         }
+    } else {
+        if(menuLogin) menuLogin.style.display = 'block';
+        if(menuLogout) menuLogout.style.display = 'none';
+        if(menuFavoritos) menuFavoritos.style.display = 'none';
+        if(menuAdmin) menuAdmin.style.display = 'none';
+    }
+}
 
-        const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
+function logout() {
+    sessionStorage.removeItem('usuarioLogado');
+    alert('Você saiu do sistema.');
+    window.location.href = 'index.html';
+}
 
-        const cardHtml = `
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    <img src="${imgPath}" class="card-img-top" alt="${produto.nome}">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0 text-truncate" style="max-width: 80%;">${produto.nome}</h5>
-                            <button class="btn btn-link p-0 ${cor}" onclick="toggleFavorito('${produto.id}')">
-                                <i class="bi ${icone} fs-4"></i>
-                            </button>
-                        </div>
-                        <p class="card-text text-muted small">${produto.descricao}</p>
-                        <h5 class="text-primary fw-bold">${produto.preco}</h5>
-                    </div>
-                    <div class="card-footer bg-white border-top-0 d-flex gap-2">
-                        <a href="detalhe.html?id=${produto.id}" class="btn btn-outline-primary flex-grow-1">Ver</a>
-                        <button class="btn btn-success" onclick="adicionarAoCarrinho('${produto.id}')" title="Adicionar ao Carrinho">
-                            <i class="bi bi-cart-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.innerHTML += cardHtml;
+function verificarPermissaoAdmin() {
+    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
+    if (!usuarioLogado || !usuarioLogado.admin) {
+        alert('Acesso negado!');
+        window.location.href = 'index.html';
+    }
+}
+
+function iniciarLogin() {
+    const form = document.getElementById('form-login');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const login = document.getElementById('loginUsuario').value;
+        const senha = document.getElementById('senhaUsuario').value;
+
+        try {
+            const response = await fetch(API_URL_USUARIOS);
+            const usuarios = await response.json();
+            const usuarioEncontrado = usuarios.find(u => u.login === login && u.senha === senha);
+
+            if (usuarioEncontrado) {
+                if (!usuarioEncontrado.favoritos) usuarioEncontrado.favoritos = [];
+                sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioEncontrado));
+                alert(`Bem-vindo(a), ${usuarioEncontrado.nome}!`);
+                window.location.href = 'index.html';
+            } else {
+                alert('Usuário ou senha incorretos!');
+            }
+        } catch (error) {
+            alert('Erro ao conectar.');
+        }
+    });
+}
+
+function iniciarCadastroUsuario() {
+    const form = document.getElementById('form-cadastro-usuario');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const novoUsuario = {
+            nome: document.getElementById('nome').value,
+            email: document.getElementById('email').value,
+            login: document.getElementById('login').value,
+            senha: document.getElementById('senha').value,
+            admin: false, 
+            favoritos: []
+        };
+        try {
+            await fetch(API_URL_USUARIOS, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(novoUsuario)
+            });
+            alert('Conta criada com sucesso! Faça login.');
+            window.location.href = 'login.html';
+        } catch (error) { alert('Erro ao cadastrar.'); }
     });
 }
 
 // =================================================================
-// 3. DETALHES (LÓGICA ADMIN VS CLIENTE)
-// =================================================================
-
-async function carregarDetalhesProduto() {
-    const params = new URLSearchParams(window.location.search);
-    const idProduto = params.get('id');
-    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
-
-    if (!idProduto) { window.location.href = 'index.html'; return; }
-
-    const produto = await fetchProdutoPorId(idProduto);
-    if (!produto) { alert('Produto não encontrado!'); window.location.href = 'index.html'; return; }
-
-    document.title = produto.nome + " - Detalhes";
-    const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
-
-    let botoesAcao = '';
-    
-    if (usuarioLogado && usuarioLogado.admin) {
-        // ADMIN: Editar/Excluir
-        botoesAcao = `
-            <div class="mt-4 p-3 bg-light rounded border">
-                <h6 class="text-muted mb-2"><i class="bi bi-shield-lock"></i> Área Administrativa</h6>
-                <a href="editar_produto.html?id=${produto.id}" class="btn btn-warning me-2">
-                    <i class="bi bi-pencil-fill"></i> Editar
-                </a>
-                <button id="btn-excluir" class="btn btn-danger">
-                    <i class="bi bi-trash-fill"></i> Excluir
-                </button>
-            </div>
-        `;
-    } else {
-        // CLIENTE: Adicionar ao Carrinho
-        botoesAcao = `
-            <div class="mt-4 d-flex gap-2">
-                <button class="btn btn-success btn-lg flex-grow-1" onclick="adicionarAoCarrinho('${produto.id}')">
-                    <i class="bi bi-cart-plus"></i> Adicionar ao Carrinho
-                </button>
-            </div>
-        `;
-    }
-
-    const infoContainer = document.getElementById('info-gerais');
-    infoContainer.innerHTML = `
-        <div class="col-md-6">
-            <img src="${imgPath}" class="img-fluid rounded shadow-lg" alt="${produto.nome}">
-        </div>
-        <div class="col-md-6">
-            <h2>${produto.nome}</h2>
-            <h4 class="text-muted">${produto.marca}</h4>
-            <h3 class="text-primary my-3">${produto.preco}</h3>
-            <p class="lead">${produto.descricao}</p>
-            <hr>
-            <h5>Sobre o produto:</h5>
-            <p>${produto.conteudo}</p>
-            ${botoesAcao}
-        </div>
-    `;
-
-    const btnExcluir = document.getElementById('btn-excluir');
-    if (btnExcluir) {
-        btnExcluir.addEventListener('click', () => { excluirProduto(produto.id); });
-    }
-
-    // Galeria
-    const galeriaContainer = document.getElementById('galeria-container');
-    if (produto.galeria && produto.galeria.length > 0) {
-        galeriaContainer.innerHTML = '';
-        produto.galeria.forEach(foto => {
-            const imgGaleriaPath = foto.imagem ? foto.imagem.replace('/public/', '') : '';
-            const fotoHtml = `<div class="col"><div class="card"><img src="${imgGaleriaPath}" class="card-img-top" alt="${foto.titulo}"></div></div>`;
-            galeriaContainer.innerHTML += fotoHtml;
-        });
-    } else {
-        const secaoGaleria = document.getElementById('fotos-vinculadas');
-        if(secaoGaleria) secaoGaleria.innerHTML = "<p class='text-center'>Não há fotos extras.</p>";
-    }
-}
-
-// =================================================================
-// 4. FAVORITOS
+// 4. FAVORITOS E DETALHES
 // =================================================================
 
 async function toggleFavorito(idProduto) {
@@ -297,7 +348,6 @@ async function toggleFavorito(idProduto) {
     if (!usuarioLogado) { alert('Faça login para favoritar!'); return; }
 
     if (!usuarioLogado.favoritos) usuarioLogado.favoritos = [];
-
     const idString = String(idProduto);
     const index = usuarioLogado.favoritos.findIndex(fav => String(fav) === idString);
 
@@ -315,16 +365,11 @@ async function toggleFavorito(idProduto) {
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ favoritos: usuarioLogado.favoritos })
         });
-        
         sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioLogado));
         
         if (document.getElementById('cards-container')) carregarTodosProdutos(); 
         if (document.getElementById('favoritos-container')) carregarPaginaFavoritos();
-        
-    } catch (error) {
-        console.error(error);
-        alert('Erro ao salvar favorito.');
-    }
+    } catch (error) { console.error(error); alert('Erro ao salvar favorito.'); }
 }
 
 async function carregarPaginaFavoritos() {
@@ -365,43 +410,57 @@ async function carregarPaginaFavoritos() {
     });
 }
 
-// =================================================================
-// 5. FUNÇÕES AUXILIARES E CRUD (CADASTRO, LOGIN, DASHBOARD)
-// =================================================================
-
-function verificarLogin() {
+async function carregarDetalhesProduto() {
+    const params = new URLSearchParams(window.location.search);
+    const idProduto = params.get('id');
     const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
-    const menuLogin = document.getElementById('menu-login');
-    const menuLogout = document.getElementById('menu-logout');
-    const menuAdmin = document.getElementById('menu-admin');
-    const menuFavoritos = document.getElementById('menu-favoritos');
 
-    if (usuarioLogado) {
-        if(menuLogin) menuLogin.style.display = 'none';
-        if(menuLogout) menuLogout.style.display = 'block';
-        if(menuFavoritos) menuFavoritos.style.display = 'block';
-        if (usuarioLogado.admin && menuAdmin) menuAdmin.style.display = 'block';
+    if (!idProduto) { window.location.href = 'index.html'; return; }
+
+    const produto = await fetchProdutoPorId(idProduto);
+    if (!produto) { alert('Produto não encontrado!'); window.location.href = 'index.html'; return; }
+
+    document.title = produto.nome + " - Detalhes";
+    const imgPath = produto.imagem_principal ? produto.imagem_principal.replace('/public/', '') : '';
+
+    let botoesAcao = '';
+    if (usuarioLogado && usuarioLogado.admin) {
+        botoesAcao = `
+            <div class="mt-4 p-3 bg-light rounded border">
+                <h6 class="text-muted mb-2"><i class="bi bi-shield-lock"></i> Admin</h6>
+                <a href="editar_produto.html?id=${produto.id}" class="btn btn-warning me-2">Editar</a>
+                <button id="btn-excluir" class="btn btn-danger">Excluir</button>
+            </div>`;
     } else {
-        if(menuLogin) menuLogin.style.display = 'block';
-        if(menuLogout) menuLogout.style.display = 'none';
-        if(menuFavoritos) menuFavoritos.style.display = 'none';
-        if(menuAdmin) menuAdmin.style.display = 'none';
+        botoesAcao = `
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-success btn-lg flex-grow-1" onclick="adicionarAoCarrinho('${produto.id}')">
+                    <i class="bi bi-cart-plus"></i> Adicionar ao Carrinho
+                </button>
+            </div>`;
+    }
+
+    const infoContainer = document.getElementById('info-gerais');
+    infoContainer.innerHTML = `
+        <div class="col-md-6"><img src="${imgPath}" class="img-fluid rounded shadow-lg"></div>
+        <div class="col-md-6"><h2>${produto.nome}</h2><h4 class="text-muted">${produto.marca}</h4><h3 class="text-primary my-3">${produto.preco}</h3><p class="lead">${produto.descricao}</p><hr><h5>Sobre:</h5><p>${produto.conteudo}</p>${botoesAcao}</div>`;
+
+    const btnExcluir = document.getElementById('btn-excluir');
+    if (btnExcluir) btnExcluir.addEventListener('click', () => { excluirProduto(produto.id); });
+
+    const galeriaContainer = document.getElementById('galeria-container');
+    if (produto.galeria && produto.galeria.length > 0) {
+        galeriaContainer.innerHTML = '';
+        produto.galeria.forEach(foto => {
+            const imgG = foto.imagem ? foto.imagem.replace('/public/', '') : '';
+            galeriaContainer.innerHTML += `<div class="col"><div class="card"><img src="${imgG}" class="card-img-top"></div></div>`;
+        });
     }
 }
 
-function logout() {
-    sessionStorage.removeItem('usuarioLogado');
-    alert('Você saiu do sistema.');
-    window.location.href = 'index.html';
-}
-
-function verificarPermissaoAdmin() {
-    const usuarioLogado = JSON.parse(sessionStorage.getItem('usuarioLogado'));
-    if (!usuarioLogado || !usuarioLogado.admin) {
-        alert('Acesso negado!');
-        window.location.href = 'index.html';
-    }
-}
+// =================================================================
+// 5. FUNÇÕES AUXILIARES, API E DASHBOARD
+// =================================================================
 
 async function fetchProdutos() {
     try {
@@ -423,51 +482,6 @@ function parsePrice(priceString) {
     return parseFloat(priceString.replace("R$", "").trim().replace(",", "."));
 }
 
-function pesquisarProdutos() {
-    const termo = document.getElementById('campo-pesquisa').value;
-    carregarTodosProdutos(termo);
-}
-
-// LOGIN / CADASTRO
-function iniciarLogin() {
-    const form = document.getElementById('form-login');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const login = document.getElementById('loginUsuario').value;
-        const senha = document.getElementById('senhaUsuario').value;
-        try {
-            const response = await fetch(API_URL_USUARIOS);
-            const usuarios = await response.json();
-            const usuarioEncontrado = usuarios.find(u => u.login === login && u.senha === senha);
-            if (usuarioEncontrado) {
-                if (!usuarioEncontrado.favoritos) usuarioEncontrado.favoritos = [];
-                sessionStorage.setItem('usuarioLogado', JSON.stringify(usuarioEncontrado));
-                alert(`Bem-vindo(a), ${usuarioEncontrado.nome}!`);
-                window.location.href = 'index.html';
-            } else { alert('Usuário ou senha incorretos!'); }
-        } catch (error) { alert('Erro ao conectar.'); }
-    });
-}
-
-function iniciarCadastroUsuario() {
-    const form = document.getElementById('form-cadastro-usuario');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const novoUsuario = {
-            nome: document.getElementById('nome').value,
-            email: document.getElementById('email').value,
-            login: document.getElementById('login').value,
-            senha: document.getElementById('senha').value,
-            admin: false, favoritos: []
-        };
-        try {
-            await fetch(API_URL_USUARIOS, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(novoUsuario) });
-            alert('Conta criada com sucesso!'); window.location.href = 'login.html';
-        } catch (error) { alert('Erro ao cadastrar.'); }
-    });
-}
-
-// DASHBOARD E CRUD DE PRODUTOS
 async function carregarDestaques() {
     const container = document.getElementById('carrossel-inner-container');
     if (!container) return;
