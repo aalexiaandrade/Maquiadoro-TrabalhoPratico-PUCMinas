@@ -165,7 +165,6 @@
       "galeria": []
     }
   ],
-
   "usuarios": [
     {
       "id": "admin-id-1",
@@ -183,7 +182,10 @@
       "nome": "Usuario",
       "email": "user@gmail.com",
       "admin": false,
-      "favoritos": []
+      "favoritos": [
+        "1",
+        "2"
+      ]
     }
   ]
 }
