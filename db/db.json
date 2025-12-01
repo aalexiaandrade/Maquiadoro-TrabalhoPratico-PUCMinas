@@ -5,8 +5,8 @@
       "nome": "Batom Matte Velvet Red",
       "marca": "Maquiadoro",
       "descricao": "Um batom vermelho intenso com acabamento matte aveludado de longa duração.",
-      "conteudo": "Nosso Batom Matte Velvet Red oferece cor pigmentada em uma única passada.",
-      "preco": "R$ 99,99",
+      "conteudo": "Nosso Batom Matte Velvet Red oferece cor pigmentada em uma única passada. Fórmula enriquecida com manteiga de karité para não ressecar os lábios. Perfeito para qualquer ocasião, do dia à noite.",
+      "preco": "R$ 89,90",
       "destaque": true,
       "imagem_principal": "assets/img/batom-vermelho-1.jpg",
       "galeria": [
@@ -50,17 +50,122 @@
       ]
     },
     {
+      "id": 3,
+      "nome": "Paleta de Sombras Sunset",
+      "marca": "Maquiadoro",
+      "descricao": "12 cores ultra pigmentadas em tons quentes e terrosos (mattes e cintilantes).",
+      "conteudo": "Crie looks incríveis com a Paleta Sunset. São 12 sombras que variam de mattes amanteigados a cintilantes de alto impacto. Fórmula fácil de esfumar e de longa duração.",
+      "preco": "R$ 199,90",
+      "destaque": true,
+      "imagem_principal": "assets/img/paleta-sunset-1.jpg",
+      "galeria": [
+        {
+          "id": 1,
+          "titulo": "Swatches dos 12 tons",
+          "imagem": "assets/img/galeria/paleta-swatches.jpg"
+        },
+        {
+          "id": 2,
+          "titulo": "Paleta aberta (detalhe)",
+          "imagem": "assets/img/galeria/paleta-aberta.jpg"
+        },
+        {
+          "id": 3,
+          "titulo": "Look completo",
+          "imagem": "assets/img/galeria/paleta-look.jpg"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "nome": "Máscara de Cílios Volume Max",
+      "marca": "Maquiadoro",
+      "descricao": "Cílios com 5x mais volume e definição instantânea sem grumos.",
+      "conteudo": "Fórmula preta intensa que não borra e dura o dia todo. O aplicador exclusivo alcança até os menores fios, garantindo um olhar dramático.",
+      "preco": "R$ 59,90",
+      "destaque": false,
+      "imagem_principal": "assets/img/rimel-volume.jpg",
+      "galeria": []
+    },
+    {
+      "id": 5,
+      "nome": "Blush Compacto Pêssego",
+      "marca": "Maquiadoro",
+      "descricao": "Tom suave para um ar de saúde natural com acabamento aveludado.",
+      "conteudo": "Textura fina e aveludada que esfuma facilmente. Ideal para todos os tons de pele, proporcionando um acabamento matte natural que dura horas.",
+      "preco": "R$ 45,00",
+      "destaque": false,
+      "imagem_principal": "assets/img/blush-pessego.jpg",
+      "galeria": []
+    },
+    {
+      "id": 6,
+      "nome": "Sérum Facial Vitamina C",
+      "marca": "Maquiadoro Skin",
+      "descricao": "Antioxidante poderoso para uma pele radiante, firme e uniforme.",
+      "conteudo": "Combate os radicais livres, estimula o colágeno e clareia manchas. Use diariamente antes do protetor solar para potencializar a proteção.",
+      "preco": "R$ 129,90",
+      "destaque": true,
+      "imagem_principal": "assets/img/serum-vitc.jpg",
+      "galeria": []
+    },
+    {
+      "id": 7,
+      "nome": "Kit de Pincéis Profissionais",
+      "marca": "Maquiadoro",
+      "descricao": "Kit completo com 12 pincéis essenciais para rosto e olhos.",
+      "conteudo": "Cerdas sintéticas ultra macias e cruelty-free. Acompanha estojo de couro sintético para transporte. Tudo o que você precisa para uma maquiagem completa.",
+      "preco": "R$ 259,90",
+      "destaque": true,
+      "imagem_principal": "assets/img/kit-pinceis.jpg",
+      "galeria": []
+    },
+    {
+      "id": 8,
+      "nome": "Delineador Líquido Cat Eye",
+      "marca": "Maquiadoro",
+      "descricao": "Traço preciso e ultra preto à prova d'água para o gatinho perfeito.",
+      "conteudo": "Ponta de feltro flexível que facilita o delineado gatinho, mesmo para iniciantes. Secagem rápida e longa duração sem craquelar.",
+      "preco": "R$ 39,90",
+      "destaque": false,
+      "imagem_principal": "assets/img/delineador.jpg",
+      "galeria": []
+    },
+    {
+      "id": 9,
+      "nome": "Pó Solto Translúcido",
+      "marca": "Maquiadoro",
+      "descricao": "Sela a maquiagem sem adicionar cor ou pesar na pele.",
+      "conteudo": "Partículas micronizadas que controlam a oleosidade e disfarçam poros. Acabamento aveludado invisível, ideal para a técnica de baking.",
+      "preco": "R$ 65,00",
+      "destaque": false,
+      "imagem_principal": "assets/img/po-translucido.jpg",
+      "galeria": []
+    },
+    {
+      "id": 10,
+      "nome": "Gloss Labial Crystal",
+      "marca": "Maquiadoro",
+      "descricao": "Brilho espelhado com efeito de volume e sem grudar.",
+      "conteudo": "Pode ser usado sozinho ou por cima do batom para um efeito vinil. Contém ácido hialurônico para hidratação contínua dos lábios.",
+      "preco": "R$ 35,90",
+      "destaque": false,
+      "imagem_principal": "assets/img/gloss-crystal.jpg",
+      "galeria": []
+    },
+    {
+      "id": 11,
       "nome": "Corretivo MAC",
       "marca": "Maquiadoro",
-      "preco": "350",
+      "preco": "R$ 349,90",
       "imagem_principal": "assets/img/corretivo.jpg",
-      "descricao": "Corretivo MAC",
+      "descricao": "Melhor corretivo para tampar manchas e olheiras.",
       "conteudo": "Melhor corretivo para tampar manchas e olheiras.",
       "destaque": false,
-      "galeria": [],
-      "id": 3
+      "galeria": []
     }
   ],
+
   "usuarios": [
     {
       "id": "admin-id-1",
